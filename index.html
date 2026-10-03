@@ -1,0 +1,3110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Spider Man Fan Game</title>
+
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#05070b;
+  font-family:Arial,sans-serif;
+  touch-action:none
+}
+#game{position:fixed;inset:0}
+canvas{display:block}
+
+#menu{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(#05070ddd,#111827cc);
+  z-index:20;
+  color:#fff;
+  text-align:center
+}
+
+.panel{
+  width:min(92vw,520px);
+  padding:28px;
+  border:1px solid #ffffff22;
+  border-radius:22px;
+  background:#07101be8;
+  box-shadow:0 20px 70px #000
+}
+
+h1{
+  margin:0 0 15px;
+  font-size:36px
+}
+
+p{color:#b8c2d1}
+
+.controls{
+  color:#cbd5e1;
+  line-height:1.6;
+  margin:10px 0 18px;
+  font-size:15px
+}
+
+.internet{
+  color:#94a3b8;
+  font-size:13px;
+  margin-top:12px
+}
+
+.btn{
+  border:0;
+  border-radius:14px;
+  padding:15px 24px;
+  margin:7px;
+  background:#e11d2e;
+  color:#fff;
+  font-size:18px;
+  font-weight:700
+}
+
+#hud{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:5;
+  color:#fff;
+  pointer-events:none
+}
+
+#money{
+  position:absolute;
+  top:12px;
+  left:12px;
+  padding:9px 12px;
+  background:#07101bcc;
+  border-radius:12px
+}
+
+#objective{
+  position:absolute;
+  top:12px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:9px 14px;
+  background:#07101bcc;
+  border-radius:12px;
+  text-align:center
+}
+
+#orient,#webBtn,#jumpBtn,#pauseBtn{
+  position:absolute;
+  pointer-events:auto;
+  border:0;
+  color:#fff;
+  font-weight:700
+}
+
+#orient{
+  top:12px;
+  right:12px;
+  border-radius:12px;
+  padding:10px;
+  background:#334155cc
+}
+
+#webBtn{
+  right:24px;
+  bottom:120px;
+  width:92px;
+  height:92px;
+  border-radius:50%;
+  background:#e5e7eb;
+  color:#111827;
+  box-shadow:0 8px 30px #0008
+}
+
+#jumpBtn{
+  right:34px;
+  bottom:25px;
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:#2563eb
+}
+
+#pauseBtn{
+  right:24px;
+  top:62px;
+  border-radius:12px;
+  padding:10px;
+  background:#334155cc
+}
+
+#stick{
+  position:absolute;
+  left:22px;
+  bottom:25px;
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  background:#ffffff18;
+  border:2px solid #ffffff20;
+  pointer-events:auto
+}
+
+#knob{
+  position:absolute;
+  left:38px;
+  top:38px;
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  background:#ffffff55
+}
+
+#tip{
+  position:absolute;
+  bottom:8px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:12px;
+  color:#ffffff88
+}
+
+#cross{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:8px;
+  height:8px;
+  margin:-4px;
+  border-radius:50%;
+  background:#fff8
+}
+
+#toast{
+  position:absolute;
+  left:50%;
+  bottom:30%;
+  transform:translate(-50%,50%);
+  padding:12px 16px;
+  background:#07101bee;
+  border-radius:12px;
+  opacity:0;
+  transition:.2s
+}
+</style>
+</head>
+
+<body>
+
+<div id="game"></div>
+
+<div id="menu">
+  <div class="panel">
+
+    <h1>spider man fan game</h1>
+
+    <div class="controls">
+      <b>Управление:</b><br>
+      Джойстик — движение<br>
+      Паутина — зацепиться за здание<br>
+      Прыжок — прыжок<br>
+      WASD — движение<br>
+      Space — прыжок
+    </div>
+
+    <button class="btn" id="play">ИГРАТЬ</button>
+    <button class="btn" id="reset">СБРОСИТЬ ДЕНЬГИ</button>
+
+    <div class="internet">
+      Для работы 3D-библиотеки требуется интернет.
+    </div>
+
+  </div>
+</div>
+
+<div id="hud">
+
+  <div id="money">
+    💵 $<span id="moneyValue">0</span>
+  </div>
+
+  <div id="objective">
+    Миссия: доберись до жёлтой точки
+  </div>
+
+  <button id="orient">↻ ПОВОРОТ</button>
+
+  <button id="pauseBtn">Ⅱ</button>
+
+  <div id="cross"></div>
+
+  <div id="stick">
+    <div id="knob"></div>
+  </div>
+
+  <button id="webBtn">
+    🕸<br>ПАУТИНА
+  </button>
+
+  <button id="jumpBtn">
+    ПРЫЖОК
+  </button>
+
+  <div id="toast"></div>
+
+  <div id="tip">
+    WASD / джойстик • Space / Прыжок • Паутина
+  </div>
+
+</div>
+
+<script type="module">
+
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+
+/* =========================
+   ОШИБКИ
+========================= */
+
+window.addEventListener('error',e=>{
+
+  const m=document.createElement('div');
+
+  m.style.cssText=
+    'position:fixed;inset:0;z-index:99999;background:#090b10;color:#fff;padding:24px;font:16px Arial;overflow:auto';
+
+  m.textContent=
+    'Ошибка запуска игры: '+(e.message||'неизвестная ошибка');
+
+  document.body.appendChild(m);
+
+});
+
+
+/* =========================
+   THREE.JS
+========================= */
+
+const root=document.querySelector('#game');
+
+const scene=new THREE.Scene();
+
+scene.background=new THREE.Color(0x8db3d5);
+
+scene.fog=new THREE.Fog(
+  0x8db3d5,
+  220,
+  1800
+);
+
+const camera=new THREE.PerspectiveCamera(
+  68,
+  innerWidth/innerHeight,
+  .1,
+  2500
+);
+
+const renderer=new THREE.WebGLRenderer({
+  antialias:true,
+  powerPreference:"high-performance"
+});
+
+renderer.setPixelRatio(
+  Math.min(devicePixelRatio,1.0)
+);
+
+renderer.setSize(
+  innerWidth,
+  innerHeight
+);
+
+renderer.shadowMap.enabled=false;
+
+root.appendChild(renderer.domElement);
+
+scene.add(
+  new THREE.HemisphereLight(
+    0xcfe8ff,
+    0x334455,
+    2.2
+  )
+);
+
+const sun=new THREE.DirectionalLight(
+  0xffffff,
+  2.2
+);
+
+sun.position.set(
+  -300,
+  500,
+  180
+);
+
+scene.add(sun);
+
+
+/* =========================
+   ГОРОД
+========================= */
+
+const city=new THREE.Group();
+scene.add(city);
+
+const roadGroup=new THREE.Group();
+scene.add(roadGroup);
+
+const buildings=[];
+const lanes=[];
+
+const mats={
+
+  road:new THREE.MeshStandardMaterial({
+    color:0x252a30,
+    roughness:.95
+  }),
+
+  side:new THREE.MeshStandardMaterial({
+    color:0x59616b,
+    roughness:1
+  }),
+
+  glass:new THREE.MeshStandardMaterial({
+    color:0x6da4c8,
+    metalness:.15,
+    roughness:.25
+  }),
+
+  concrete:new THREE.MeshStandardMaterial({
+    color:0x8a8f96,
+    roughness:.8
+  }),
+
+  red:new THREE.MeshStandardMaterial({
+    color:0x9b1020,
+    roughness:.65
+  }),
+
+  blue:new THREE.MeshStandardMaterial({
+    color:0x163e73,
+    roughness:.65
+  }),
+
+  black:new THREE.MeshStandardMaterial({
+    color:0x0b0d10,
+    roughness:.7
+  })
+
+};
+
+const W=7000;
+const D=5000;
+
+
+function box(
+  w,
+  h,
+  d,
+  mat,
+  x,
+  y,
+  z,
+  group=city
+){
+
+  const m=new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),
+    mat
+  );
+
+  m.position.set(
+    x,
+    y,
+    z
+  );
+
+  m.castShadow=true;
+  m.receiveShadow=true;
+
+  group.add(m);
+
+  return m;
+}
+
+
+/* =========================
+   ЗЕМЛЯ
+========================= */
+
+box(
+  W,
+  2,
+  D,
+  mats.concrete,
+  0,
+  -1,
+  0
+);
+
+
+/* =========================
+   ДОРОГИ
+========================= */
+
+const roadWidth=30;
+const block=150;
+
+for(
+  let x=-W/2+75;
+  x<=W/2-75;
+  x+=block
+){
+
+  box(
+    roadWidth,
+    .2,
+    D,
+    mats.road,
+    x,
+    .12,
+    0,
+    roadGroup
+  );
+
+  lanes.push({
+    axis:'x',
+    v:x
+  });
+
+}
+
+for(
+  let z=-D/2+75;
+  z<=D/2-75;
+  z+=block
+){
+
+  box(
+    W,
+    .2,
+    roadWidth,
+    mats.road,
+    0,
+    .13,
+    z,
+    roadGroup
+  );
+
+  lanes.push({
+    axis:'z',
+    v:z
+  });
+
+}
+
+
+/* =========================
+   РАЗМЕТКА
+========================= */
+
+const markMat=new THREE.MeshBasicMaterial({
+  color:0xd7d7c0
+});
+
+for(
+  let x=-W/2+75;
+  x<=W/2-75;
+  x+=block
+){
+
+  for(
+    let z=-D/2+15;
+    z<D/2;
+    z+=45
+  ){
+
+    box(
+      1,
+      .23,
+      18,
+      markMat,
+      x,
+      .25,
+      z,
+      roadGroup
+    );
+
+  }
+
+}
+
+for(
+  let z=-D/2+75;
+  z<=D/2-75;
+  z+=block
+){
+
+  for(
+    let x=-W/2+15;
+    x<W/2;
+    x+=45
+  ){
+
+    box(
+      18,
+      .23,
+      1,
+      markMat,
+      x,
+      .25,
+      z,
+      roadGroup
+    );
+
+  }
+
+}
+
+
+/* =========================
+   ЗДАНИЯ
+========================= */
+
+function addBuilding(
+  x,
+  z,
+  w,
+  d,
+  h
+){
+
+  const palette=[
+    mats.concrete,
+    mats.blue,
+    mats.red,
+    new THREE.MeshStandardMaterial({
+      color:0x68727b
+    })
+  ];
+
+  const body=box(
+    w,
+    h,
+    d,
+    palette[
+      Math.floor(
+        Math.random()*palette.length
+      )
+    ],
+    x,
+    h/2,
+    z
+  );
+
+  buildings.push({
+    mesh:body,
+    x,
+    z,
+    w,
+    d,
+    h
+  });
+
+
+  const winMat=
+    new THREE.MeshStandardMaterial({
+      color:0x9ccbe0,
+      emissive:0x7b22cc,
+      emissiveIntensity:1.8,
+      roughness:.25
+    });
+
+
+  const rows=Math.max(
+    2,
+    Math.min(
+      7,
+      Math.floor(h/24)
+    )
+  );
+
+  const cols=Math.max(
+    2,
+    Math.min(
+      6,
+      Math.floor(w/16)
+    )
+  );
+
+
+  for(
+    let r=0;
+    r<rows;
+    r++
+  ){
+
+    for(
+      let c=0;
+      c<cols;
+      c++
+    ){
+
+      const ww=Math.min(
+        7,
+        w/(cols+2)
+      );
+
+      const hh=5;
+
+      const px=
+        x-w/2+12+
+        c*(w-24)/
+        Math.max(1,cols-1);
+
+      const py=
+        8+
+        r*(h-18)/
+        Math.max(1,rows-1);
+
+      if(py>h-5)continue;
+
+      box(
+        ww,
+        .18,
+        hh,
+        winMat,
+        px,
+        py,
+        z-d/2-.11
+      );
+
+      box(
+        ww,
+        .18,
+        hh,
+        winMat,
+        px,
+        py,
+        z+d/2+.11
+      );
+
+    }
+
+  }
+
+
+  const sideCols=Math.max(
+    2,
+    Math.min(
+      6,
+      Math.floor(d/18)
+    )
+  );
+
+
+  for(
+    let r=0;
+    r<rows;
+    r++
+  ){
+
+    for(
+      let c=0;
+      c<sideCols;
+      c++
+    ){
+
+      const dd=Math.min(
+        7,
+        d/(sideCols+2)
+      );
+
+      const hh=5;
+
+      const pz=
+        z-d/2+12+
+        c*(d-24)/
+        Math.max(1,sideCols-1);
+
+      const py=
+        8+
+        r*(h-18)/
+        Math.max(1,rows-1);
+
+
+      box(
+        .18,
+        hh,
+        dd,
+        winMat,
+        x-w/2-.11,
+        py,
+        pz
+      );
+
+      box(
+        .18,
+        hh,
+        dd,
+        winMat,
+        x+w/2+.11,
+        py,
+        pz
+      );
+
+    }
+
+  }
+
+}
+
+
+for(
+  let x=-W/2+35;
+  x<W/2;
+  x+=150
+){
+
+  for(
+    let z=-D/2+35;
+    z<D/2;
+    z+=150
+  ){
+
+    const onRoadX=
+      Math.abs(
+        ((x+75)%150)-75
+      )<25;
+
+    const onRoadZ=
+      Math.abs(
+        ((z+75)%150)-75
+      )<25;
+
+    if(!onRoadX && !onRoadZ){
+
+      const w=
+        90+
+        Math.random()*35;
+
+      const d=
+        90+
+        Math.random()*35;
+
+      const h=
+        35+
+        Math.random()*150;
+
+      addBuilding(
+        x,
+        z,
+        w,
+        d,
+        h
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   ИГРОК
+========================= */
+
+const player=new THREE.Group();
+
+scene.add(player);
+
+const suit=
+  new THREE.MeshStandardMaterial({
+    color:0x152d7a,
+    roughness:.55
+  });
+
+const red=
+  new THREE.MeshStandardMaterial({
+    color:0xc51d2e,
+    roughness:.5
+  });
+
+const dark=
+  new THREE.MeshStandardMaterial({
+    color:0x080a0e,
+    roughness:.7
+  });
+
+const webMat=
+  new THREE.MeshBasicMaterial({
+    color:0xffffff,
+    transparent:true,
+    opacity:1,
+    depthTest:true
+  });
+
+
+let rope=null;
+
+let ropeAnchor=
+  new THREE.Vector3();
+
+let vel=
+  new THREE.Vector3();
+
+let onGround=true;
+
+
+/*
+  webState:
+
+  none      = обычное состояние
+  attaching = паук быстро добирается
+              до точки висения
+  hanging   = висит ровно 3 секунды
+  falling   = медленно падает
+*/
+
+let webState='none';
+
+let hangingUntil=0;
+
+let webHangPoint=
+  new THREE.Vector3();
+
+let webAttachStart=
+  new THREE.Vector3();
+
+let webAttachStartedAt=0;
+
+const WEB_ATTACH_TIME=.22;
+
+
+/* =========================
+   ПЕРСОНАЖ
+========================= */
+
+player.position.set(
+  0,
+  0,
+  0
+);
+
+const torso=
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      1.15,
+      1.65,
+      .62
+    ),
+    suit
+  );
+
+torso.position.y=2.0;
+player.add(torso);
+
+
+const head=
+  new THREE.Mesh(
+    new THREE.SphereGeometry(
+      .48,
+      16,
+      12
+    ),
+    red
+  );
+
+head.position.y=3.25;
+player.add(head);
+
+
+const eyeMat=
+  new THREE.MeshBasicMaterial({
+    color:0xffffff
+  });
+
+
+for(
+  const sx of [-.18,.18]
+){
+
+  const eye=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .11,
+        8,
+        6
+      ),
+      eyeMat
+    );
+
+  eye.scale.set(
+    .7,
+    .45,
+    .18
+  );
+
+  eye.position.set(
+    sx,
+    3.34,
+    -.43
+  );
+
+  player.add(eye);
+
+}
+
+
+for(
+  const sx of [-.78,.78]
+){
+
+  const arm=
+    new THREE.Mesh(
+      new THREE.CapsuleGeometry(
+        .16,
+        .95,
+        6,
+        10
+      ),
+      red
+    );
+
+  arm.position.set(
+    sx,
+    2.05,
+    0
+  );
+
+  arm.rotation.z=
+    sx<0?-0.15:0.15;
+
+  player.add(arm);
+
+}
+
+
+for(
+  const sx of [-.32,.32]
+){
+
+  const leg=
+    new THREE.Mesh(
+      new THREE.CapsuleGeometry(
+        .18,
+        1.05,
+        6,
+        10
+      ),
+      suit
+    );
+
+  leg.position.set(
+    sx,
+    .75,
+    0
+  );
+
+  player.add(leg);
+
+}
+
+
+/* =========================
+   ПАУТИНА
+========================= */
+
+function clearRope(){
+
+  if(rope){
+
+    rope.group.traverse(
+      o=>{
+
+        if(o.geometry)
+          o.geometry.dispose();
+
+        if(o.material)
+          o.material.dispose();
+
+      }
+    );
+
+    scene.remove(
+      rope.group
+    );
+
+    rope=null;
+
+  }
+
+}
+
+
+function makeRope(a,b){
+
+  clearRope();
+
+  const group=
+    new THREE.Group();
+
+  const dir=
+    new THREE.Vector3()
+      .subVectors(b,a);
+
+  const len=
+    dir.length();
+
+  if(len<1)return;
+
+
+  const mainGeo=
+    new THREE.CylinderGeometry(
+      .11,
+      .11,
+      len,
+      10,
+      1
+    );
+
+  const main=
+    new THREE.Mesh(
+      mainGeo,
+      webMat
+    );
+
+  main.position.copy(
+    a.clone()
+      .add(b)
+      .multiplyScalar(.5)
+  );
+
+  main.quaternion.setFromUnitVectors(
+    new THREE.Vector3(0,1,0),
+    dir.clone().normalize()
+  );
+
+  group.add(main);
+
+
+  const side=
+    new THREE.Vector3(
+      -dir.z,
+      0,
+      dir.x
+    );
+
+  if(side.lengthSq()<.001)
+    side.set(1,0,0);
+
+  side.normalize();
+
+
+  const steps=
+    Math.min(
+      18,
+      Math.max(
+        7,
+        Math.floor(len/18)
+      )
+    );
+
+
+  for(
+    let i=1;
+    i<steps;
+    i++
+  ){
+
+    const t=i/steps;
+
+    const center=
+      a.clone().lerp(b,t);
+
+    const width=
+      .10+
+      Math.sin(Math.PI*t)*.18;
+
+    const p1=
+      center.clone()
+        .add(
+          side.clone()
+            .multiplyScalar(width)
+        );
+
+    const p2=
+      center.clone()
+        .sub(
+          side.clone()
+            .multiplyScalar(width)
+        );
+
+    const g=
+      new THREE.BufferGeometry()
+        .setFromPoints([
+          p1,
+          p2
+        ]);
+
+    const l=
+      new THREE.Line(
+        g,
+        new THREE.LineBasicMaterial({
+          color:0xffffff,
+          transparent:true,
+          opacity:.95
+        })
+      );
+
+    group.add(l);
+
+  }
+
+
+  const fineGeo=
+    new THREE.CylinderGeometry(
+      .035,
+      .035,
+      len,
+      6,
+      1
+    );
+
+  const fine=
+    new THREE.Mesh(
+      fineGeo,
+      new THREE.MeshBasicMaterial({
+        color:0xffffff,
+        transparent:true,
+        opacity:.8
+      })
+    );
+
+  fine.position.copy(
+    main.position
+  );
+
+  fine.quaternion.copy(
+    main.quaternion
+  );
+
+  group.add(fine);
+
+
+  scene.add(group);
+
+  rope={
+    group,
+    anchor:b.clone()
+  };
+
+}
+
+
+/* =========================
+   БЛИЖАЙШАЯ СТЕНА ЗДАНИЯ
+========================= */
+
+function nearestBuilding(){
+
+  let best=null;
+  let bestDistance=Infinity;
+  let bestAnchor=null;
+  let bestHangPoint=null;
+
+  const p=player.position;
+
+  for(
+    const b of buildings
+  ){
+
+    const halfW=b.w/2;
+    const halfD=b.d/2;
+
+    const left=
+      b.x-halfW;
+
+    const right=
+      b.x+halfW;
+
+    const front=
+      b.z-halfD;
+
+    const back=
+      b.z+halfD;
+
+
+    /*
+      Расстояние до каждой из
+      четырёх стен здания.
+    */
+
+    const candidates=[
+      {
+        x:left-0.7,
+        z:THREE.MathUtils.clamp(
+          p.z,
+          front+1,
+          back-1
+        ),
+        distance:Math.abs(p.x-left)
+      },
+      {
+        x:right+0.7,
+        z:THREE.MathUtils.clamp(
+          p.z,
+          front+1,
+          back-1
+        ),
+        distance:Math.abs(p.x-right)
+      },
+      {
+        x:THREE.MathUtils.clamp(
+          p.x,
+          left+1,
+          right-1
+        ),
+        z:front-0.7,
+        distance:Math.abs(p.z-front)
+      },
+      {
+        x:THREE.MathUtils.clamp(
+          p.x,
+          left+1,
+          right-1
+        ),
+        z:back+0.7,
+        distance:Math.abs(p.z-back)
+      }
+    ];
+
+
+    for(
+      const c of candidates
+    ){
+
+      /*
+        Не цепляемся за стену,
+        если она слишком далеко.
+      */
+
+      if(c.distance>900)
+        continue;
+
+
+      /*
+        Высота точки зацепления.
+
+        Она находится высоко,
+        но всегда ниже крыши.
+      */
+
+      const anchorY=
+        THREE.MathUtils.clamp(
+          p.y+18,
+          12,
+          Math.max(
+            12,
+            b.h-4
+          )
+        );
+
+
+      const anchor=
+        new THREE.Vector3(
+          c.x,
+          anchorY,
+          c.z
+        );
+
+
+      /*
+        Направление наружу от стены.
+      */
+
+      const away=
+        new THREE.Vector3(
+          p.x-c.x,
+          0,
+          p.z-c.z
+        );
+
+
+      /*
+        Для точной вертикальной стены
+        используем сторону здания.
+      */
+
+      if(
+        Math.abs(
+          c.x-(left-0.7)
+        )<.01
+      ){
+
+        away.set(
+          -1,
+          0,
+          0
+        );
+
+      }
+      else if(
+        Math.abs(
+          c.x-(right+0.7)
+        )<.01
+      ){
+
+        away.set(
+          1,
+          0,
+          0
+        );
+
+      }
+      else if(
+        Math.abs(
+          c.z-(front-0.7)
+        )<.01
+      ){
+
+        away.set(
+          0,
+          0,
+          -1
+        );
+
+      }
+      else{
+
+        away.set(
+          0,
+          0,
+          1
+        );
+
+      }
+
+
+      /*
+        Точка, где персонаж реально
+        будет висеть возле стены.
+
+        Она находится снаружи здания,
+        а не внутри него.
+      */
+
+      const hangPoint=
+        anchor.clone()
+          .add(
+            away.clone()
+              .multiplyScalar(5)
+          );
+
+      hangPoint.y=
+        Math.max(
+          3.5,
+          anchorY-7
+        );
+
+
+      /*
+        Если эта стена ближе —
+        сохраняем её.
+      */
+
+      if(
+        c.distance<bestDistance
+      ){
+
+        bestDistance=c.distance;
+        best=b;
+        bestAnchor=anchor;
+        bestHangPoint=hangPoint;
+
+      }
+
+    }
+
+  }
+
+
+  if(!best)
+    return null;
+
+
+  return {
+    building:best,
+    anchor:bestAnchor,
+    hangPoint:bestHangPoint,
+    distance:bestDistance
+  };
+
+}
+
+
+/* =========================
+   ЗАЦЕПЛЕНИЕ ПАУТИНОЙ
+========================= */
+
+function attachWeb(){
+
+  /*
+    Во время самого зацепления
+    и во время трёх секунд висения
+    повторное нажатие игнорируем.
+  */
+
+  if(
+    webState==='attaching' ||
+    webState==='hanging'
+  )
+    return;
+
+
+  const found=
+    nearestBuilding();
+
+
+  if(!found){
+
+    toast(
+      "Рядом нет здания"
+    );
+
+    return;
+
+  }
+
+
+  ropeAnchor.copy(
+    found.anchor
+  );
+
+  webHangPoint.copy(
+    found.hangPoint
+  );
+
+  webAttachStart.copy(
+    player.position
+  );
+
+  webAttachStartedAt=
+    performance.now();
+
+
+  /*
+    Сначала короткое настоящее
+    движение к стене.
+
+    После этого начинается
+    полноценное висение.
+  */
+
+  webState='attaching';
+
+  onGround=false;
+
+  vel.set(
+    0,
+    0,
+    0
+  );
+
+
+  /*
+    Сразу создаём паутину,
+    чтобы было видно, куда
+    персонаж цепляется.
+  */
+
+  makeRope(
+    player.position.clone()
+      .add(
+        new THREE.Vector3(
+          0,
+          2.1,
+          0
+        )
+      ),
+    ropeAnchor
+  );
+
+}
+
+
+/* =========================
+   МИССИИ
+========================= */
+
+const missions=[];
+
+const missionMat=
+  new THREE.MeshBasicMaterial({
+    color:0xffd21c
+  });
+
+
+/*
+  60 x 42 = 2520 точек.
+
+  Они идут змейкой по городу.
+*/
+
+const cols=60;
+const rows=42;
+
+
+for(
+  let gz=0;
+  gz<rows;
+  gz++
+){
+
+  const reverse=
+    gz%2===1;
+
+
+  for(
+    let gx=0;
+    gx<cols;
+    gx++
+  ){
+
+    const order=
+      reverse
+        ? cols-1-gx
+        : gx;
+
+
+    const x=
+      -W/2+
+      300+
+      order*
+      ((W-600)/(cols-1))+
+      (Math.random()-.5)*20;
+
+
+    const z=
+      -D/2+
+      250+
+      gz*
+      ((D-500)/(rows-1))+
+      (Math.random()-.5)*20;
+
+
+    const m=
+      new THREE.Mesh(
+        new THREE.RingGeometry(
+          6,
+          9,
+          16
+        ),
+        missionMat
+      );
+
+
+    /*
+      ВАЖНО:
+
+      Раньше здесь было y=7,
+      поэтому кольца висели
+      в воздухе.
+
+      Теперь они лежат прямо
+      над поверхностью земли.
+    */
+
+    m.rotation.x=
+      Math.PI/2;
+
+    m.position.set(
+      x,
+      .13,
+      z
+    );
+
+    city.add(m);
+
+    missions.push(m);
+
+  }
+
+}
+
+
+/* =========================
+   СОХРАНЕНИЕ
+========================= */
+
+const SAVE_KEY=
+  'spiderFanGameSave';
+
+
+let savedData=null;
+
+try{
+
+  savedData=
+    JSON.parse(
+      localStorage.getItem(
+        SAVE_KEY
+      )||'null'
+    );
+
+}catch(e){
+
+  savedData=null;
+
+}
+
+
+let mission=
+  Number(
+    savedData?.mission||0
+  );
+
+
+if(
+  !Number.isFinite(mission) ||
+  mission<0
+){
+
+  mission=0;
+
+}
+
+
+/* =========================
+   ДЕНЬГИ
+========================= */
+
+let money=
+  Number(
+    savedData?.money||
+    localStorage.getItem(
+      'spiderMoney'
+    )||
+    0
+  );
+
+
+if(
+  !Number.isFinite(money)
+){
+
+  money=0;
+
+}
+
+
+document.querySelector(
+  '#moneyValue'
+).textContent=money;
+
+
+/* =========================
+   ВОССТАНОВЛЕНИЕ ПОЗИЦИИ
+========================= */
+
+if(
+  savedData?.player &&
+  Number.isFinite(savedData.player.x) &&
+  Number.isFinite(savedData.player.y) &&
+  Number.isFinite(savedData.player.z)
+){
+
+  player.position.set(
+    savedData.player.x,
+    Math.max(
+      0,
+      savedData.player.y
+    ),
+    savedData.player.z
+  );
+
+  player.rotation.y=
+    Number(
+      savedData.player.rotation||0
+    );
+
+}
+
+
+/* =========================
+   ЦЕЛЬ
+========================= */
+
+function updateMission(){
+
+  const m=
+    missions[
+      mission%missions.length
+    ];
+
+  document.querySelector(
+    '#objective'
+  ).textContent=
+    `Миссия: жёлтая точка • ${
+      mission%missions.length+1
+    }/${missions.length}`;
+
+  return m;
+
+}
+
+
+let target=
+  updateMission();
+
+
+function saveGame(){
+
+  try{
+
+    const data={
+
+      money,
+
+      mission,
+
+      player:{
+        x:player.position.x,
+        y:player.position.y,
+        z:player.position.z,
+        rotation:player.rotation.y
+      }
+
+    };
+
+
+    localStorage.setItem(
+      SAVE_KEY,
+      JSON.stringify(data)
+    );
+
+    localStorage.setItem(
+      'spiderMoney',
+      String(money)
+    );
+
+  }catch(e){}
+
+}
+
+
+/* =========================
+   СБРОС ДЕНЕГ
+========================= */
+
+document.querySelector(
+  '#reset'
+).onclick=()=>{
+
+  money=0;
+
+  localStorage.setItem(
+    'spiderMoney',
+    '0'
+  );
+
+  saveGame();
+
+  document.querySelector(
+    '#moneyValue'
+  ).textContent='0';
+
+};
+
+
+/* =========================
+   НАГРАДА
+========================= */
+
+function reward(){
+
+  money+=10;
+
+  mission++;
+
+  saveGame();
+
+  document.querySelector(
+    '#moneyValue'
+  ).textContent=money;
+
+  target=
+    updateMission();
+
+  toast(
+    "+$10"
+  );
+
+}
+
+
+/* =========================
+   NPC МАШИНЫ
+========================= */
+
+const cars=[];
+
+
+function mattsafe(c){
+
+  return new THREE.MeshStandardMaterial({
+    color:c,
+    roughness:.35
+  });
+
+}
+
+
+function makeCar(
+  axis,
+  dir,
+  v
+){
+
+  const g=
+    new THREE.Group();
+
+
+  const body=
+    box(
+      10,
+      3,
+      18,
+      new THREE.MeshStandardMaterial({
+        color:[
+          0x1d4ed8,
+          0xb91c1c,
+          0xf2f2f2,
+          0x111827
+        ][
+          Math.floor(
+            Math.random()*4
+          )
+        ]
+      }),
+      0,
+      0,
+      0,
+      g
+    );
+
+  body.position.y=2;
+
+
+  const roof=
+    box(
+      8,
+      2.4,
+      8,
+      mats.glass,
+      0,
+      4,
+      0,
+      g
+    );
+
+
+  for(
+    const s of [-1,1]
+  ){
+
+    for(
+      const z of [-5.5,5.5]
+    ){
+
+      const w=
+        box(
+          2.5,
+          1,
+          1,
+          mattsafe(0xffffff),
+          s*4.2,
+          1.8,
+          z,
+          g
+        );
+
+      w.position.y=1.5;
+
+    }
+
+  }
+
+
+  g.position.set(
+    axis==='x'
+      ? v
+      : ((Math.random()-.5)*W/2),
+    1,
+    axis==='z'
+      ? v
+      : ((Math.random()-.5)*D/2)
+  );
+
+
+  g.userData={
+    axis,
+    dir,
+    speed:15+Math.random()*18
+  };
+
+
+  scene.add(g);
+
+  cars.push(g);
+
+}
+
+
+for(
+  let i=0;
+  i<10;
+  i++
+){
+
+  const axis=
+    Math.random()<.5
+      ? 'x'
+      : 'z';
+
+  const road=
+    (Math.floor(
+      Math.random()*40
+    )-20)*150;
+
+  makeCar(
+    axis,
+    Math.random()<.5?1:-1,
+    road
+  );
+
+}
+
+
+/* =========================
+   УПРАВЛЕНИЕ
+========================= */
+
+const keys={};
+
+
+addEventListener(
+  'keydown',
+  e=>{
+
+    keys[e.code]=true;
+
+    if(e.code==='Space')
+      jump();
+
+  }
+);
+
+
+addEventListener(
+  'keyup',
+  e=>{
+    keys[e.code]=false;
+  }
+);
+
+
+function jump(){
+
+  if(
+    onGround &&
+    webState!=='hanging' &&
+    webState!=='attaching'
+  ){
+
+    vel.y=15;
+
+    onGround=false;
+
+  }
+
+}
+
+
+document.querySelector(
+  '#jumpBtn'
+).onclick=jump;
+
+
+document.querySelector(
+  '#webBtn'
+).onclick=attachWeb;
+
+
+/* =========================
+   ПАУЗА
+========================= */
+
+let paused=false;
+
+
+document.querySelector(
+  '#pauseBtn'
+).onclick=()=>{
+
+  paused=!paused;
+
+  document.querySelector(
+    '#pauseBtn'
+  ).textContent=
+    paused?'▶':'Ⅱ';
+
+};
+
+
+/* =========================
+   ПОВОРОТ
+========================= */
+
+document.querySelector(
+  '#orient'
+).onclick=async()=>{
+
+  try{
+
+    if(
+      document.documentElement
+        .requestFullscreen
+    ){
+
+      await document.documentElement
+        .requestFullscreen();
+
+    }
+
+
+    if(
+      screen.orientation?.lock
+    ){
+
+      await screen.orientation
+        .lock('landscape');
+
+    }
+
+  }catch(e){
+
+    toast(
+      "Поворот доступен через системную ориентацию"
+    );
+
+  }
+
+};
+
+
+/* =========================
+   ДЖОЙСТИК
+========================= */
+
+let joy={
+  x:0,
+  y:0
+};
+
+let drag=false;
+
+
+const stick=
+  document.querySelector(
+    '#stick'
+  );
+
+const knob=
+  document.querySelector(
+    '#knob'
+  );
+
+
+stick.addEventListener(
+  'pointerdown',
+  e=>{
+
+    drag=true;
+
+    stick.setPointerCapture(
+      e.pointerId
+    );
+
+    joyMove(e);
+
+  }
+);
+
+
+stick.addEventListener(
+  'pointermove',
+  e=>{
+
+    if(drag)
+      joyMove(e);
+
+  }
+);
+
+
+stick.addEventListener(
+  'pointerup',
+  ()=>{
+
+    drag=false;
+
+    joy={
+      x:0,
+      y:0
+    };
+
+    knob.style.transform=
+      'translate(0,0)';
+
+  }
+);
+
+
+function joyMove(e){
+
+  const r=
+    stick.getBoundingClientRect();
+
+  const cx=
+    r.left+r.width/2;
+
+  const cy=
+    r.top+r.height/2;
+
+  let x=
+    e.clientX-cx;
+
+  let y=
+    e.clientY-cy;
+
+  const l=
+    Math.hypot(x,y);
+
+  const max=48;
+
+
+  if(l>max){
+
+    x=x/l*max;
+    y=y/l*max;
+
+  }
+
+
+  joy={
+    x:x/max,
+    y:y/max
+  };
+
+
+  knob.style.transform=
+    `translate(${x}px,${y}px)`;
+
+}
+
+
+/* =========================
+   СТАРТ
+========================= */
+
+let gameStarted=false;
+
+
+document.querySelector(
+  '#play'
+).onclick=()=>{
+
+  gameStarted=true;
+
+  document.querySelector(
+    '#menu'
+  ).style.display='none';
+
+  document.querySelector(
+    '#hud'
+  ).style.display='block';
+
+};
+
+
+/* =========================
+   TOAST
+========================= */
+
+function toast(text){
+
+  const el=
+    document.querySelector(
+      '#toast'
+    );
+
+  el.textContent=text;
+
+  el.style.opacity='1';
+
+  clearTimeout(
+    el._timer
+  );
+
+  el._timer=
+    setTimeout(
+      ()=>{
+        el.style.opacity='0';
+      },
+      1400
+    );
+
+}
+
+
+/* =========================
+   СОХРАНЕНИЕ ПРИ УХОДЕ
+========================= */
+
+document.addEventListener(
+  'visibilitychange',
+  ()=>{
+    if(document.hidden)
+      saveGame();
+  }
+);
+
+
+/*
+  Автоматическое сохранение
+  каждые полсекунды.
+*/
+
+setInterval(
+  ()=>{
+    if(gameStarted)
+      saveGame();
+  },
+  500
+);
+
+
+/* =========================
+   КОЛЛИЗИИ ЗДАНИЙ
+========================= */
+
+function resolveBuildingCollisions(
+  previousPosition
+){
+
+  const radius=.8;
+
+
+  for(
+    const b of buildings
+  ){
+
+    /*
+      ПРИЗЕМЛЕНИЕ НА КРЫШУ
+
+      В старой версии проверка
+      была перепутана по направлению
+      движения. Теперь нормально
+      ловим момент, когда игрок
+      падает с высоты выше крыши
+      и пересекает высоту здания.
+    */
+
+    if(
+      previousPosition.y>=b.h &&
+      player.position.y<=b.h &&
+      vel.y<=0 &&
+      Math.abs(
+        player.position.x-b.x
+      )<=b.w/2+radius &&
+      Math.abs(
+        player.position.z-b.z
+      )<=b.d/2+radius
+    ){
+
+      player.position.y=b.h;
+
+      vel.y=0;
+
+      onGround=true;
+
+      continue;
+
+    }
+
+
+    /*
+      Если игрок стоит выше крыши,
+      стены здания снизу уже не
+      должны мешать.
+    */
+
+    if(
+      player.position.y>=b.h-.05
+    ){
+
+      continue;
+
+    }
+
+
+    const minX=
+      b.x-b.w/2-radius;
+
+    const maxX=
+      b.x+b.w/2+radius;
+
+    const minZ=
+      b.z-b.d/2-radius;
+
+    const maxZ=
+      b.z+b.d/2+radius;
+
+
+    if(
+      player.position.x>minX &&
+      player.position.x<maxX &&
+      player.position.z>minZ &&
+      player.position.z<maxZ
+    ){
+
+      const pushLeft=
+        player.position.x-minX;
+
+      const pushRight=
+        maxX-player.position.x;
+
+      const pushBack=
+        player.position.z-minZ;
+
+      const pushForward=
+        maxZ-player.position.z;
+
+
+      const minPush=
+        Math.min(
+          pushLeft,
+          pushRight,
+          pushBack,
+          pushForward
+        );
+
+
+      if(
+        minPush===pushLeft
+      ){
+
+        player.position.x=minX;
+
+        vel.x=0;
+
+      }
+      else if(
+        minPush===pushRight
+      ){
+
+        player.position.x=maxX;
+
+        vel.x=0;
+
+      }
+      else if(
+        minPush===pushBack
+      ){
+
+        player.position.z=minZ;
+
+        vel.z=0;
+
+      }
+      else{
+
+        player.position.z=maxZ;
+
+        vel.z=0;
+
+      }
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   ИГРОВОЙ UPDATE
+========================= */
+
+function update(dt){
+
+  if(
+    !gameStarted ||
+    paused
+  )
+    return;
+
+
+  const previousPosition=
+    player.position.clone();
+
+
+  let ix=
+    (keys.KeyD?1:0)-
+    (keys.KeyA?1:0)+
+    joy.x;
+
+
+  let iz=
+    (keys.KeyS?1:0)-
+    (keys.KeyW?1:0)+
+    joy.y;
+
+
+  const input=
+    new THREE.Vector3(
+      ix,
+      0,
+      iz
+    );
+
+
+  if(
+    input.lengthSq()>1
+  )
+    input.normalize();
+
+
+  const speed=
+    keys.ShiftLeft
+      ? 22
+      : 12;
+
+
+  /* =====================
+     ПАУТИНА: ПОДТЯГИВАНИЕ
+  ===================== */
+
+  if(
+    webState==='attaching'
+  ){
+
+    /*
+      Плавно переносим персонажа
+      к реальной точке возле стены.
+    */
+
+    const elapsed=
+      performance.now()-
+      webAttachStartedAt;
+
+    const t=
+      THREE.MathUtils.clamp(
+        elapsed/WEB_ATTACH_TIME,
+        0,
+        1
+      );
+
+    /*
+      Плавное ускорение/замедление.
+    */
+
+    const smooth=
+      t*t*(3-2*t);
+
+    player.position.lerpVectors(
+      webAttachStart,
+      webHangPoint,
+      smooth
+    );
+
+    vel.set(
+      0,
+      0,
+      0
+    );
+
+    onGround=false;
+
+
+    /*
+      Когда дошли до стены —
+      начинаем ровно 3 секунды
+      настоящего висения.
+    */
+
+    if(t>=1){
+
+      player.position.copy(
+        webHangPoint
+      );
+
+      webState='hanging';
+
+      hangingUntil=
+        performance.now()+3000;
+
+    }
+
+  }
+
+
+  /* =====================
+     ПАУТИНА: 3 СЕКУНДЫ
+  ===================== */
+
+  else if(
+    webState==='hanging'
+  ){
+
+    /*
+      Полностью замораживаем
+      персонажа.
+    */
+
+    player.position.copy(
+      webHangPoint
+    );
+
+    vel.set(
+      0,
+      0,
+      0
+    );
+
+    onGround=false;
+
+
+    if(
+      performance.now()>=
+      hangingUntil
+    ){
+
+      clearRope();
+
+      webState='falling';
+
+      /*
+        Небольшая начальная
+        скорость вниз.
+      */
+
+      vel.y=-2.5;
+
+    }
+
+  }
+
+
+  /* =====================
+     ОБЫЧНОЕ ДВИЖЕНИЕ
+  ===================== */
+
+  else{
+
+    vel.x=
+      THREE.MathUtils.lerp(
+        vel.x,
+        input.x*speed,
+        .14
+      );
+
+    vel.z=
+      THREE.MathUtils.lerp(
+        vel.z,
+        input.z*speed,
+        .14
+      );
+
+
+    if(
+      input.lengthSq()>0
+    ){
+
+      /*
+        Направление персонажа
+        совпадает с направлением
+        движения.
+
+        Без +Math.PI.
+      */
+
+      const moveAngle=
+        Math.atan2(
+          input.x,
+          -input.z
+        );
+
+
+      /*
+        Плавный поворот вместо
+        резкого вращения.
+
+        Это убирает неприятный
+        эффект при боковом движении.
+      */
+
+      let difference=
+        moveAngle-
+        player.rotation.y;
+
+
+      while(
+        difference>Math.PI
+      )
+        difference-=Math.PI*2;
+
+
+      while(
+        difference<-Math.PI
+      )
+        difference+=Math.PI*2;
+
+
+      player.rotation.y+=
+        difference*
+        Math.min(
+          1,
+          dt*12
+        );
+
+    }
+
+  }
+
+
+  /*
+    ЖЁСТКО запрещаем персонажу
+    наклоняться назад/вперёд
+    или вбок.
+
+    Он может вращаться только
+    вокруг вертикальной оси Y.
+  */
+
+  player.rotation.x=0;
+  player.rotation.z=0;
+
+
+  /* =====================
+     ГРАВИТАЦИЯ
+  ===================== */
+
+  if(
+    webState==='falling'
+  ){
+
+    /*
+      Медленное падение.
+    */
+
+    vel.y-=8.5*dt;
+
+  }
+  else if(
+    webState!=='hanging' &&
+    webState!=='attaching'
+  ){
+
+    vel.y-=34*dt;
+
+  }
+
+
+  /* =====================
+     ДВИЖЕНИЕ
+  ===================== */
+
+  if(
+    webState!=='hanging' &&
+    webState!=='attaching'
+  ){
+
+    player.position.addScaledVector(
+      vel,
+      dt
+    );
+
+  }
+
+
+  /* =====================
+     ЗЕМЛЯ
+  ===================== */
+
+  if(
+    player.position.y<=0
+  ){
+
+    player.position.y=0;
+
+    vel.y=0;
+
+    onGround=true;
+
+    if(
+      webState==='falling'
+    ){
+
+      webState='none';
+
+    }
+
+  }
+  else{
+
+    onGround=false;
+
+  }
+
+
+  /*
+    Пока паук зацепляется или
+    висит, здания не должны
+    вытолкнуть его из точки
+    висения.
+  */
+
+  if(
+    webState!=='attaching' &&
+    webState!=='hanging'
+  ){
+
+    resolveBuildingCollisions(
+      previousPosition
+    );
+
+  }
+
+
+  /* =====================
+     ГРАНИЦЫ ГОРОДА
+  ===================== */
+
+  if(
+    player.position.x<
+    -W/2+20
+  )
+    player.position.x=
+      -W/2+20;
+
+
+  if(
+    player.position.x>
+    W/2-20
+  )
+    player.position.x=
+      W/2-20;
+
+
+  if(
+    player.position.z<
+    -D/2+20
+  )
+    player.position.z=
+      -D/2+20;
+
+
+  if(
+    player.position.z>
+    D/2-20
+  )
+    player.position.z=
+      D/2-20;
+
+
+  /* =====================
+     МИССИЯ
+  ===================== */
+
+  if(
+    target &&
+    player.position.distanceTo(
+      target.position
+    )<18
+  ){
+
+    target.visible=false;
+
+    reward();
+
+    target=
+      updateMission();
+
+    target.visible=true;
+
+  }
+
+
+  /* =====================
+     ОБНОВЛЕНИЕ ПАУТИНЫ
+  ===================== */
+
+  if(rope){
+
+    const a=
+      player.position.clone()
+        .add(
+          new THREE.Vector3(
+            0,
+            2.1,
+            0
+          )
+        );
+
+    const b=
+      ropeAnchor.clone();
+
+    const d=
+      new THREE.Vector3()
+        .subVectors(
+          b,
+          a
+        );
+
+    const len=
+      d.length();
+
+
+    const main=
+      rope.group.children[0];
+
+    const fine=
+      rope.group.children[
+        rope.group.children.length-1
+      ];
+
+
+    const mid=
+      a.clone()
+        .add(b)
+        .multiplyScalar(.5);
+
+
+    main.position.copy(mid);
+
+
+    main.scale.y=
+      len/
+      Math.max(
+        .001,
+        main.geometry.parameters.height
+      );
+
+
+    main.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0,1,0),
+      d.clone().normalize()
+    );
+
+
+    fine.position.copy(
+      mid
+    );
+
+
+    fine.scale.y=
+      len/
+      Math.max(
+        .001,
+        fine.geometry.parameters.height
+      );
+
+
+    fine.quaternion.copy(
+      main.quaternion
+    );
+
+  }
+
+
+  /* =====================
+     МАШИНЫ
+  ===================== */
+
+  for(
+    const c of cars
+  ){
+
+    c.position[
+      c.userData.axis
+    ]+=
+      c.userData.dir*
+      c.userData.speed*
+      dt;
+
+
+    const lim=
+      c.userData.axis==='x'
+        ? W/2
+        : D/2;
+
+
+    if(
+      Math.abs(
+        c.position[
+          c.userData.axis
+        ]
+      )>lim+100
+    ){
+
+      c.position[
+        c.userData.axis
+      ]=
+        -Math.sign(
+          c.position[
+            c.userData.axis
+          ]
+        )*
+        (lim+80);
+
+    }
+
+  }
+
+
+  /* =====================
+     КАМЕРА
+  ===================== */
+
+  const camOffset=
+    new THREE.Vector3(
+      0,
+      5.2,
+      9.5
+    )
+    .applyAxisAngle(
+      new THREE.Vector3(
+        0,
+        1,
+        0
+      ),
+      player.rotation.y
+    );
+
+
+  const desired=
+    player.position.clone()
+      .add(camOffset);
+
+
+  camera.position.lerp(
+    desired,
+    .12
+  );
+
+
+  camera.lookAt(
+    player.position.clone()
+      .add(
+        new THREE.Vector3(
+          0,
+          1.8,
+          0
+        )
+      )
+  );
+
+}
+
+
+/* =========================
+   GAME LOOP
+========================= */
+
+let last=
+  performance.now();
+
+
+function loop(t){
+
+  requestAnimationFrame(
+    loop
+  );
+
+
+  const dt=
+    Math.min(
+      .035,
+      (t-last)/1000
+    );
+
+
+  last=t;
+
+
+  update(dt);
+
+
+  renderer.render(
+    scene,
+    camera
+  );
+
+}
+
+
+loop(last);
+
+
+/* =========================
+   RESIZE
+========================= */
+
+addEventListener(
+  'resize',
+  ()=>{
+
+    camera.aspect=
+      innerWidth/innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      innerWidth,
+      innerHeight
+    );
+
+  }
+);
+
+
+/* =========================
+   UNHANDLED ERRORS
+========================= */
+
+addEventListener(
+  'unhandledrejection',
+  e=>{
+
+    e.preventDefault();
+
+    toast(
+      'Не удалось выполнить действие в браузере'
+    );
+
+  }
+);
+
+</script>
+
+</body>
+</html>
